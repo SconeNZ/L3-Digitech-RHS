@@ -1,44 +1,67 @@
 import sys
-#imports all functions from that library
+import random
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton, QInputDialog, QMessageBox
 from PyQt5.QtCore import QTimer
 
-#This class is to define the entire process of the game
-class ButtonGrid(QWidget):
-    #This function has all the variables in it and initializes the code
+class WhackAMoleGame(QWidget):
     def __init__(self):
         super().__init__()
-        self.number_of_rows = 3
-        self.number_of_cols = 3
-        self.player = 'X'
-        self.number_of_turns = 0
-        self.game_ended = False
+        self.timer_min= 15
+        self.timer_max=60
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle('Whacka-Mole')
+        self.setWindowTitle('Whack-A-Mole')
 
+        # makes the player to enter game duration
+        self.time_limit, ok = QInputDialog.getInt(self, 'Input Dialog', 'Enter the game duration in seconds (15-60):',self.timer_min, self.timer_max)
+
+        # Set up timer to end the game after the specified time limit
+        QTimer.singleShot(self.time_limit * 1000, self.end_game)
+
+        # Initialize game variables
+        self.grid_size = 5
+        self.score = 0
+        self.mole_button = (0, 0)
+        
+        # Set up the grid layout
         self.grid = QGridLayout()
         self.setLayout(self.grid)
 
-        self.buttons = [[QPushButton(' ') for _ in range(3)] for _ in range(3)]
+        # Create buttons for the grid
+        self.buttons = [[QPushButton(' ') for _ in range(self.grid_size)] for _ in range(self.grid_size)]
 
-        for row in range(self.number_of_rows):
-            for col in range(self.number_of_cols):
+        for row in range(self.grid_size):
+            for col in range(self.grid_size):
                 button = self.buttons[row][col]
-                button.setFixedSize(100,100)
-                button.clicked.connect(lambda ch, row=row, col=col: self.button_clicked(row, col))
+                button.setFixedSize(100, 100)
+                button.clicked.connect(lambda ch, row=row, col=col: self.mole_clicked(row, col))
                 self.grid.addWidget(button, row, col)
+        
+        # Place the initial mole
+        self.place_mole()
 
-# Makes sure it is running the Main code
+    def place_mole(self):
+        row, col = self.mole_button
+        self.buttons[row][col].setText(' ')
+
+        new_row, new_col = random.randint(0, self.grid_size-1), random.randint(0, self.grid_size-1)
+        self.mole_button = (new_row, new_col)
+        self.buttons[new_row][new_col].setText('mole')
+
+    def mole_clicked(self, row, col):
+        if (row, col) == self.mole_button:
+            self.score += 1
+            self.place_mole()
+
+    def end_game(self):
+        QMessageBox.information(self, 'Game Over', f'Game Over! Your score is {self.score}')
+        with open('score.txt', 'a') as file:
+            file.write(f'Score: {self.score}\n')
+        self.close()
+
 if __name__ == '__main__':
-
-     # Create an instance of QApplication
     app = QApplication(sys.argv)
-
-    # Create a main application window (QWidget)
-    window = ButtonGrid()
+    window = WhackAMoleGame()
     window.show()
-    # Execute the application's event loop
     sys.exit(app.exec_())
-
