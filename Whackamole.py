@@ -6,15 +6,15 @@ from PyQt5.QtCore import QTimer
 class WhackAMoleGame(QWidget):
     def __init__(self):
         super().__init__()
-        self.timer_min= 15
-        self.timer_max=60
+        self.timer_max= 60
+        self.timer_min=15
         self.init_ui()
 
     def init_ui(self):
         self.setWindowTitle('Whack-A-Mole')
 
         # makes the player to enter game duration
-        self.time_limit, ok = QInputDialog.getInt(self, 'Input Dialog', 'Enter the game duration in seconds (15-60):',self.timer_min, self.timer_max)
+        self.time_limit, ok = QInputDialog.getInt(self, 'Input Dialog', 'Enter the game duration in seconds (15-60):',self.timer_max, self.timer_min)
 
         # Set up timer to end the game after the specified time limit
         QTimer.singleShot(self.time_limit * 1000, self.end_game)
