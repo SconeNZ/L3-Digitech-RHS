@@ -10,6 +10,7 @@ class WhackAMoleGame(QWidget):
         self.timer_min = 15
         self.grid_size_min = 3
         self.grid_size_max = 5
+        self.mole_move_interval = 2000  # Mole moves every 2 seconds (1000 per second)
         self.init_ui()
 
     def init_ui(self):
@@ -62,6 +63,11 @@ class WhackAMoleGame(QWidget):
         self.game_timer.timeout.connect(self.update_time)
         self.game_timer.start(1000)
 
+        # Set up the timer to move the mole every 2 seconds
+        self.mole_timer = QTimer(self)
+        self.mole_timer.timeout.connect(self.place_mole)
+        self.mole_timer.start(self.mole_move_interval)
+
     def place_mole(self):
         row, col = self.mole_button
         self.buttons[row][col].setText(' ')
@@ -84,6 +90,7 @@ class WhackAMoleGame(QWidget):
 
     def end_game(self):
         self.game_timer.stop()
+        self.mole_timer.stop()
         QMessageBox.information(self, 'Game Over', f'Game Over! Your score is {self.score}')
         with open('score.txt', 'a') as file:
             file.write(f'Score: {self.score}\n')
